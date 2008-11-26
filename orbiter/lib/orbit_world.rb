@@ -24,11 +24,13 @@ class OrbitWorld
   end
 
   def initialize(xcells, ycells)
-    @step = 0
-    @clear_limit = 500
+    @clear_time = Time.new
+    @clear_delay = 30
     @xcells = xcells
     @ycells = ycells
     @origin = Physics::Point.new(xcells/2, ycells/2)
+    @center = Physics::Vector.new(0,0)
+    @magnification = 0.7
     @p = Physics.new
     add_sun
     add_planetesimals
@@ -36,12 +38,12 @@ class OrbitWorld
 
   def add_sun
     sun = @p.add_object("sun")
-    sun.mass = random(100..300)
+    sun.mass = 300
     sun.position = @origin.dup
   end
 
   def add_planetesimals
-    (1..random(10..100)).each do |name|
+    (1..random(10..200)).each do |name|
       add_planetesimal(name)
     end
   end
@@ -50,7 +52,7 @@ class OrbitWorld
     o = @p.add_object name
     o.position = select_position()
     o.velocity = select_velocity_based_on(o.position)
-    o.mass = random(0.2..1)
+    o.mass = random(0.1..1.0)
   end
 
   def select_position()
@@ -64,7 +66,7 @@ class OrbitWorld
   end
 
   def select_velocity_based_on(position)
-    orbital_tangent(position) * random(0.6..0.8)
+    orbital_tangent(position) * 17/Math.sqrt(@origin.distance(position))
   end
 
   def orbital_tangent(position)
@@ -89,32 +91,58 @@ class OrbitWorld
   end
 
   def draw_objects(screen)
-    @sun = @p.find "sun"
-    sun_offset = @sun.position - @origin
+    center_offset = find_center
     @p.objects.each do |object|
-      draw(screen, object.position - sun_offset)
+      draw(screen, object.position - center_offset, object.mass)
     end
   end
 
-  def draw(screen, point)
-    screen.draw_cell(point.x, point.y, "black")
+  def find_center
+    @center
+  end
+
+  def draw(screen, point, weight)
+    offsetFactor = (@magnification-1.0)/@magnification
+    x = point.x/@magnification + offsetFactor*@origin.x
+    y = point.y/@magnification + offsetFactor*@origin.y
+    screen.draw_cell(x, y, weight, @magnification)
   end
 
   def sporadically_clean_up(screen)
-    @step += 1;
-    if (@step > @clear_limit)
-      @step = 0
+    if (Time.new - @clear_time) > @clear_delay
       screen.clear_screen
-      @clear_limit *= 1.4
+      if @magnification < 20
+        @clear_time = Time.new
+        @magnification *= 1.25
+      else
+        @clear_delay = 120
+      end
       delete_objects_too_far_from_sun
     end
   end
 
   def delete_objects_too_far_from_sun
+    to_delete = []
+    sun = @p.find("sun")
     @p.objects.each do |object|
-      if @sun.distance(object) > 10000
-        @p.delete(object.name)
+      if sun.distance(object) > 10000
+        to_delete << object.name
       end
     end
+    to_delete.each do |name|
+      @p.delete(name)
+    end
+  end
+
+  def zoom_in
+    sun = @p.find("sun")
+    @center = sun.position - @origin
+    @magnification *= 0.75;
+  end
+
+  def zoom_out
+    sun = @p.find("sun")
+    @center = sun.position - @origin
+    @magnification *= 1.25;
   end
 end
