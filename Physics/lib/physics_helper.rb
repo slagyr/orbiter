@@ -1,6 +1,0 @@
-require 'object.rb'
-require 'coordinate.rb'
-require 'vector.rb'
-require 'point.rb'
-require 'velocity.rb'
-require 'force.rb'

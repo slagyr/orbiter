@@ -2,7 +2,7 @@
 # The scheme here is not sophisticated.  It simply calculates and applies
 # forces from one time period to the next.
 
-require 'physics_helper.rb'
+require 'physics/physics_helper.rb'
 
 class Physics
   def initialize
