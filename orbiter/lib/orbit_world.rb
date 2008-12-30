@@ -110,15 +110,15 @@ class OrbitWorld
 
   def sporadically_clean_up(screen)
     if (Time.new - @clear_time) > @clear_delay
-      screen.clear_screen
-      if @magnification < 20
-        @clear_time = Time.new
-        @magnification *= 1.25
-      else
+#      screen.clear_screen
+#      if @magnification < 20
+#        @clear_time = Time.new
+#        @magnification *= 1.25
+#      else
         @clear_delay = 120
       end
       delete_objects_too_far_from_sun
-    end
+#    end
   end
 
   def delete_objects_too_far_from_sun
