@@ -4,6 +4,11 @@
 
 module Production
 
+def production_opening
+$: << File.expand_path(File.dirname(__FILE__) + "/lib")
+end
+
+
 #  # Define this method if you want the production name to be different from the default, directory name.
 #  def name
 #    return Random Bowling
